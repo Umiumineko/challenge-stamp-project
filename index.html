@@ -2,17 +2,82 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>チャレンジスタンプ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: system-ui, sans-serif; text-align: center; padding: 2rem; }
-    .stamp { font-size: 4rem; margin: 1rem; }
+    body {
+      font-family: "Hiragino Maru Gothic ProN", "Rounded Mplus 1c", Arial, sans-serif;
+      background: #fff7e6;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px 20px;
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 26px;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 16px;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      margin-top: 20px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      background: #ffb703;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
-  <h1>チャレンジスタンプ</h1>
-  <p>今週のチャレンジ：</p>
-  <div class="stamp">⭐</div>
-  <p>がんばったね！</p>
+
+  <div class="container">
+    <h1>🌟チャレンジスタンプ🌟</h1>
+    <p>せんせいにもらった<br>コードをいれてね</p>
+
+    <input type="text" id="code" placeholder="ここにコードをいれる">
+
+    <button onclick="start()">はじめる</button>
+  </div>
+
+  <script>
+    function start() {
+      const code = document.getElementById('code').value.trim();
+      if (!code) {
+        alert('コードをいれてね！');
+        return;
+      }
+      // 次のページへ（例）
+      location.href = `/challenge.html?code=${encodeURIComponent(code)}`;
+    }
+  </script>
+
 </body>
 </html>
