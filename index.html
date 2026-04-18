@@ -9,7 +9,6 @@
       font-family: "Hiragino Maru Gothic ProN", "Rounded Mplus 1c", Arial, sans-serif;
       background: #fff7e6;
       margin: 0;
-      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,19 +23,13 @@
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      font-size: 26px;
-      margin-bottom: 10px;
-    }
-    p {
-      font-size: 16px;
-      color: #555;
-    }
+    h1 { font-size: 26px; }
+    p { color: #555; }
     input {
       width: 100%;
       padding: 12px;
       font-size: 18px;
-      margin-top: 20px;
+      margin-top: 12px;
       border-radius: 10px;
       border: 1px solid #ccc;
       text-align: center;
@@ -51,33 +44,45 @@
       background: #ffb703;
       cursor: pointer;
     }
-    button:hover {
-      opacity: 0.9;
-    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>🌟チャレンジスタンプ🌟</h1>
-    <p>せんせいにもらった<br>コードをいれてね</p>
+<div class="container">
+  <h1>🌟チャレンジスタンプ🌟</h1>
+  <p>だいじな 2つを いれてね</p>
 
-    <input type="text" id="code" placeholder="ここにコードをいれる">
+  <input id="number" type="number" placeholder="しゅっせきばんごう">
+  <input id="code" type="text" placeholder="ログインコード">
 
-    <button onclick="start()">はじめる</button>
-  </div>
+  <button onclick="login()">はじめる</button>
+</div>
 
-  <script>
-    function start() {
-      const code = document.getElementById('code').value.trim();
-      if (!code) {
-        alert('コードをいれてね！');
-        return;
-      }
-      // 次のページへ（例）
-      location.href = `/challenge.html?code=${encodeURIComponent(code)}`;
-    }
-  </script>
+<script>
+async function login() {
+  const number = document.getElementById('number').value.trim();
+  const code = document.getElementById('code').value.trim();
+
+  if (!number || !code) {
+    alert('2つとも いれてね');
+    return;
+  }
+
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ number, code })
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
+    location.href = '/challenge.html';
+  } else {
+    alert('ちがうみたい… もういちど たしかめてね');
+  }
+}
+</script>
 
 </body>
 </html>
