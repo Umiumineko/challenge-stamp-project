@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>テーマをえらぼう</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #f0f8ff;
+}
+
+h1 {
+  margin-top: 30px;
+}
+
+.theme-container {
+  display: grid;
+  gap: 15px;
+  max-width: 400px;
+  margin: 30px auto;
+}
+
+.theme-card {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.theme-card.selected {
+  border: 3px solid #4CAF50;
+}
+
+button {
+  padding: 12px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  background: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: gray;
+}
+</style>
+</head>
+
+<body>
+
+<h1>こんしゅうのテーマをえらぼう！</h1>
+
+<div id="themeList" class="theme-container"></div>
+
+<button id="selectBtn" disabled>これにする！</button>
+
+<script>
+let selectedTheme = null;
+
+// ★ここをあなたのWorker URLに
+const API_BASE = "https://challenge-api.nocuttingcorner.workers.dev";
+
+// テーマ取得
+async function loadThemes() {
+  const res = await fetch(API_BASE + "/api/themes");
+  const themes = await res.json();
+
+  const list = document.getElementById("themeList");
+
+  themes.forEach(theme => {
+    
+  const div = document.createElement("div");
+    div.className = "theme-card";
+
+    div.innerHTML = `
+      <h3>${theme.title}</h3>
+      <p>${theme.desc}</p>
+    `;
+
+    div.onclick = () => {
+      document.querySelectorAll(".theme-card").forEach(el => {
+        el.classList.remove("selected");
+      });
+
+      div.classList.add("selected");
+
+      selectedTheme = theme.id;
+      document.getElementById("selectBtn").disabled = false;
+    };
+
+    list.appendChild(div);
+  });
+}
+
+// 選択保存
+document.getElementById("selectBtn").onclick = async () => {
+  const userCode = localStorage.getItem("userCode");
+
+  await fetch(API_BASE + "/api/select-theme", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      code: userCode,
+      themeId: selectedTheme
+    })
+  });
+
+  // 次へ
+  window.location.href = "tasks.html";
+};
+
+// 初期読み込み
+loadThemes();
+</script>
+
+</body>
+</html>
+
