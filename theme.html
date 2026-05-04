@@ -29,11 +29,6 @@ h1 {
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.theme-card:hover {
-  transform: scale(1.03);
 }
 
 .theme-card.selected {
@@ -77,14 +72,13 @@ button:disabled {
 <button id="selectBtn" disabled>これにする！</button>
 
 <script>
-const API_BASE = "https://challenge-api.nocuttingcorner.workers.dev";
 
 let selectedTheme = null;
 
-// ✅ テーマ取得
+// ✅ テーマ取得（同一ドメイン）
 async function loadThemes() {
   try {
-    const res = await fetch(API_BASE + "/api/themes");
+    const res = await fetch("/api/themes");
     const themes = await res.json();
 
     const list = document.getElementById("themeList");
@@ -113,8 +107,7 @@ async function loadThemes() {
     });
 
   } catch (e) {
-
-    alert("テーマの読み込みに失敗しました");
+    alert("データの読み込みに失敗しました");
     console.error(e);
   }
 }
@@ -123,15 +116,16 @@ async function loadThemes() {
 document.getElementById("selectBtn").onclick = () => {
   if (!selectedTheme) return;
 
-  // 仮保存（次の画面で使用）
+  // 仮保存
   localStorage.setItem("selectedTheme", selectedTheme);
 
   // 次の画面へ
   window.location.href = "tasks.html";
 };
 
-// ✅ 初期実行
+// ✅ 実行
 loadThemes();
+
 </script>
 
 </body>
