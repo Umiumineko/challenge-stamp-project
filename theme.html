@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="description" content="チャレンジスタンププロジェクトは、小学生が毎日の行動や学習に楽しく取り組める個人制作の学習支援サイトです。スタンプ形式で習慣づくりを応援します。">
 <title>テーマをえらぼう</title>
 
 <style>
@@ -14,12 +13,13 @@ body {
 
 h1 {
   margin-top: 30px;
+  font-size: 26px;
 }
 
 .theme-container {
   display: grid;
   gap: 15px;
-  max-width: 400px;
+  max-width: 420px;
   margin: 30px auto;
 }
 
@@ -29,24 +29,41 @@ h1 {
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.theme-card:hover {
+  transform: scale(1.03);
 }
 
 .theme-card.selected {
   border: 3px solid #4CAF50;
 }
 
+.theme-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.theme-desc {
+  font-size: 14px;
+  margin-top: 8px;
+  color: #555;
+}
+
 button {
+  margin-top: 20px;
   padding: 12px 20px;
   font-size: 18px;
   border: none;
-  border-radius: 10px;
-  background: #4CAF50;
+  border-radius: 12px;
+  background-color: #4CAF50;
   color: white;
   cursor: pointer;
 }
 
 button:disabled {
-  background: gray;
+  background-color: gray;
 }
 </style>
 </head>
@@ -60,66 +77,62 @@ button:disabled {
 <button id="selectBtn" disabled>これにする！</button>
 
 <script>
-let selectedTheme = null;
-
-// ★ここをあなたのWorker URLに
 const API_BASE = "https://challenge-api.nocuttingcorner.workers.dev";
 
-// テーマ取得
+let selectedTheme = null;
+
+// ✅ テーマ取得
 async function loadThemes() {
-  const res = await fetch(API_BASE + "/api/themes");
-  const themes = await res.json();
+  try {
+    const res = await fetch(API_BASE + "/api/themes");
+    const themes = await res.json();
 
-  const list = document.getElementById("themeList");
+    const list = document.getElementById("themeList");
 
-  themes.forEach(theme => {
-    
-  const div = document.createElement("div");
-    div.className = "theme-card";
+    themes.forEach(theme => {
+      const div = document.createElement("div");
+      div.className = "theme-card";
 
-    div.innerHTML = `
-      <h3>${theme.title}</h3>
-      <p>${theme.desc}</p>
-    `;
+      div.innerHTML = `
+        <div class="theme-title">${theme.title}</div>
+        <div class="theme-desc">${theme.desc}</div>
+      `;
 
-    div.onclick = () => {
-      document.querySelectorAll(".theme-card").forEach(el => {
-        el.classList.remove("selected");
-      });
+      div.onclick = () => {
+        document.querySelectorAll(".theme-card").forEach(el => {
+          el.classList.remove("selected");
+        });
 
-      div.classList.add("selected");
+        div.classList.add("selected");
+        selectedTheme = theme.id;
 
-      selectedTheme = theme.id;
-      document.getElementById("selectBtn").disabled = false;
-    };
+        document.getElementById("selectBtn").disabled = false;
+      };
 
-    list.appendChild(div);
-  });
+      list.appendChild(div);
+    });
+
+  } catch (e) {
+
+    alert("テーマの読み込みに失敗しました");
+    console.error(e);
+  }
 }
 
-// 選択保存
-document.getElementById("selectBtn").onclick = async () => {
-  const userCode = localStorage.getItem("userCode");
+// ✅ 決定ボタン
+document.getElementById("selectBtn").onclick = () => {
+  if (!selectedTheme) return;
 
-  await fetch(API_BASE + "/api/select-theme", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      code: userCode,
-      themeId: selectedTheme
-    })
-  });
+  // 仮保存（次の画面で使用）
+  localStorage.setItem("selectedTheme", selectedTheme);
 
-  // 次へ
+  // 次の画面へ
   window.location.href = "tasks.html";
 };
 
-// 初期読み込み
+// ✅ 初期実行
 loadThemes();
 </script>
 
 </body>
 </html>
-
