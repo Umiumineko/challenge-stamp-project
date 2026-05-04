@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>課題をえらぼう</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #fff8f0;
+}
+
+h1 {
+  margin-top: 30px;
+  font-size: 26px;
+}
+
+.task-container {
+  display: grid;
+  gap: 15px;
+  max-width: 420px;
+  margin: 30px auto;
+}
+
+.task-card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.task-card.selected {
+  border: 3px solid orange;
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background-color: orange;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: gray;
+}
+</style>
+</head>
+
+<body>
+
+<h1>どれにちょうせんする？</h1>
+
+<div id="taskList" class="task-container"></div>
+
+<button id="selectBtn" disabled>これにする！</button>
+
+<script>
+
+let selectedTask = null;
+
+// ✅ テーマID読み込み
+const themeId = localStorage.getItem("selectedTheme");
+
+// ✅ 課題を取得
+async function loadTasks() {
+  try {
+    const res = await fetch("/api/tasks?themeId=" + themeId);
+    const tasks = await res.json();
+
+    const list = document.getElementById("taskList");
+
+    tasks.forEach(task => {
+      const div = document.createElement("div");
+      div.className = "task-card";
+
+      div.innerHTML = `<h3>${task.title}</h3>`;
+
+      div.onclick = () => {
+        document.querySelectorAll(".task-card").forEach(el => {
+          el.classList.remove("selected");
+        });
+
+        div.classList.add("selected");
+        selectedTask = task.id;
+
+        document.getElementById("selectBtn").disabled = false;
+      };
+
+      list.appendChild(div);
+    });
+
+  } catch (e) {
+    alert("課題の読み込みに失敗しました");
+    console.error(e);
+  }
+}
+
+// ✅ 決定ボタン
+document.getElementById("selectBtn").onclick = () => {
+  if (!selectedTask) return;
+
+  // 仮保存（次の画面で使用）
+  localStorage.setItem("selectedTask", selectedTask);
+
+  // 次へ
+  window.location.href = "challenge.html";
+};
+
+// 実行
+loadTasks();
+
+</script>
+
+</body>
+</html>
