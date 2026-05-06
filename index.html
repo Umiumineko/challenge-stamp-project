@@ -2,66 +2,105 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-
-<title>チャレンジスタンププロジェクト</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <meta name="description" content="チャレンジスタンププロジェクトは、小学生が毎日の行動や学習に楽しく取り組める個人制作の学習支援サイトです。スタンプ形式で習慣づくりを応援します。">
 
+<title>チャレンジスタンプ</title>
+
 <style>
 body {
-  font-family: sans-serif;
+  font-family: "Hiragino Maru Gothic ProN", "Rounded Mplus 1c", Arial, sans-serif;
+  background: #fff7e6;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background: white;
+  border-radius: 20px;
+  padding: 30px 20px;
+  width: 90%;
+  max-width: 360px;
   text-align: center;
-  padding: 40px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
-
-h1 {
-  margin-bottom: 20px;
-}
+h1 { font-size: 26px; }
+p { color: #555; }
 
 input {
-  padding: 10px;
-  font-size: 16px;
-  width: 200px;
-  margin-bottom: 20px;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
 }
 
 button {
-  padding: 12px 24px;
-  font-size: 16px;
-  border-radius: 10px;
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
   border: none;
-  background-color: #4CAF50;
-  color: white;
+  border-radius: 30px;
+  background: #ffb703;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<h1>チャレンジスタンプ</h1>
+<div class="container">
+  <h1>🌟チャレンジスタンプ🌟</h1>
+  <p>だいじな 2つを いれてね</p>
 
-<p>ログインコードを入力してください</p>
+  <input id="number" type="number" placeholder="しゅっせきばんごう">
+  <input id="code" type="text" placeholder="ログインコード">
 
-<input type="text" id="code" placeholder="例：A123">
-
-<br>
-
-<button onclick="login()">ログイン</button>
+  <button onclick="login()">はじめる</button>
+</div>
 
 <script>
-function login() {
-  const code = document.getElementById("code").value.trim();
+async function login() {
+  const number = document.getElementById('number').value.trim();
+  const code = document.getElementById('code').value.trim();
 
-  if (!code) {
-    alert("コードを入力してください");
+  if (!number || !code) {
+    alert('2つとも いれてね');
     return;
   }
 
-  // ✅ ここが超重要（これがなかったのが原因）
-  localStorage.setItem("userId", code);
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number, code })
+    });
 
-  // 次の画面へ
-  location.href = "/challenge.html";
+    const data = await res.json();
+
+    if (data.ok) {
+      // ✅ ここを追加（超重要）
+      // 出席番号＋コードでユニークIDにする
+      const userId = number + "-" + code;
+      localStorage.setItem("userId", userId);
+
+      // 次の画面へ
+      location.href = '/challenge.html';
+
+    } else {
+      alert('ちがうみたい… もういちど たしかめてね');
+    }
+
+  } catch (e) {
+    console.error(e);
+    alert('エラーが発生しました');
+  }
 }
 </script>
 
