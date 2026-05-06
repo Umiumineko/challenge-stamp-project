@@ -1,1 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>完成画面</title>
 
+<style>
+body {
+  font-family: sans-serif;
+}
+
+/* 完了画面 */
+.complete-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  width: 80%;
+  max-width: 320px;
+  z-index: 2;
+}
+
+.emoji {
+  font-size: 60px;
+}
+
+.sub {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.stamp {
+  font-size: 60px;
+  margin: 20px 0;
+  animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); }
+  100% { transform: scale(1); }
+}
+
+button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  background: #4CAF50;
+  color: white;
+  font-size: 16px;
+}
+
+/* 紙吹雪 */
+.confetti {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  top: -10px;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(720deg);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<button onclick="showComplete()">テスト表示</button>
+
+<div id="completeScreen" class="complete-screen hidden">
+  <div class="card">
+    <div class="emoji">🎉</div>
+    <h1>やったね！</h1>
+    <p class="sub">チャレンジクリア！</p>
+
+    <div class="stamp">⭐</div>
+
+    <p>今日のミッションを達成しました！</p>
+
+    <button onclick="closeComplete()">OK</button>
+  </div>
+</div>
+
+<script>
+function showComplete() {
+  const screen = document.getElementById("completeScreen");
+  screen.classList.remove("hidden");
+
+  createConfetti();
+}
+
+function closeComplete() {
+  document.getElementById("completeScreen").classList.add("hidden");
+}
+
+/* 紙吹雪生成 */
+function createConfetti() {
+  const screen = document.getElementById("completeScreen");
+
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement("div");
+    confetti.classList.add("confetti");
+
+    // ランダム位置
+    confetti.style.left = Math.random() * 100 + "%";
+
+    // ランダム色
+    const colors = ["#f44336", "#e91e63", "#9c27b0", "#2196f3", "#4CAF50", "#FFC107"];
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+    // ランダム時間
+    confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
+
+    screen.appendChild(confetti);
+
+    // 自動削除
+    setTimeout(() => confetti.remove(), 3000);
+  }
+}
+</script>
+
+</body>
+</html>
