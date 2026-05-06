@@ -2,11 +2,30 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>完成画面</title>
+<title>今日のチャレンジ</title>
 
 <style>
 body {
   font-family: sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+/* 課題表示 */
+.task-box {
+  margin-top: 40px;
+  font-size: 20px;
+}
+
+/* ボタン */
+.complete-btn {
+  margin-top: 30px;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
 }
 
 /* 完了画面 */
@@ -42,11 +61,6 @@ body {
   font-size: 60px;
 }
 
-.sub {
-  color: #666;
-  margin-bottom: 15px;
-}
-
 .stamp {
   font-size: 60px;
   margin: 20px 0;
@@ -56,15 +70,6 @@ body {
 @keyframes pop {
   0% { transform: scale(0.5); }
   100% { transform: scale(1); }
-}
-
-button {
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: none;
-  background: #4CAF50;
-  color: white;
-  font-size: 16px;
 }
 
 /* 紙吹雪 */
@@ -86,23 +91,71 @@ button {
 
 <body>
 
-<button onclick="showComplete()">テスト表示</button>
+<h1>今日のチャレンジ</h1>
 
+<div class="task-box">
+  <strong id="task">読み込み中...</strong>
+</div>
+
+<button class="complete-btn" onclick="completeTask()">
+  できた！
+</button>
+
+<!-- 🎉 完了画面 -->
 <div id="completeScreen" class="complete-screen hidden">
   <div class="card">
     <div class="emoji">🎉</div>
-    <h1>やったね！</h1>
-    <p class="sub">チャレンジクリア！</p>
-
+    <h2>やったね！</h2>
     <div class="stamp">⭐</div>
-
-    <p>今日のミッションを達成しました！</p>
-
+    <p>チャレンジクリア！</p>
     <button onclick="closeComplete()">OK</button>
   </div>
 </div>
 
 <script>
+// ユーザーID取得
+function getUserId() {
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    alert("ログインしてください");
+    location.href = "/login.html";
+  }
+
+  return userId;
+}
+
+// タスク読み込み
+async function loadTask() {
+  const userId = getUserId();
+
+  try {
+    const res = await fetch(`/api/get-task?user=${userId}`);
+    const data = await res.json();
+
+    if (!data.task) {
+      // 未設定なら選択画面へ
+      location.href = "/tasks.html";
+      return;
+    }
+
+    document.getElementById("task").textContent = data.task;
+
+  } catch (e) {
+    console.error(e);
+    alert("読み込みエラー");
+  }
+}
+
+// 完了ボタン
+function completeTask() {
+  showComplete();
+
+  // 👉 将来ここで「完了記録API」も呼べる
+  // fetch("/api/complete-task", ...)
+}
+
+// 完了画面表示
 function showComplete() {
   const screen = document.getElementById("completeScreen");
   screen.classList.remove("hidden");
@@ -110,11 +163,12 @@ function showComplete() {
   createConfetti();
 }
 
+// 閉じる
 function closeComplete() {
   document.getElementById("completeScreen").classList.add("hidden");
 }
 
-/* 紙吹雪生成 */
+// 紙吹雪
 function createConfetti() {
   const screen = document.getElementById("completeScreen");
 
@@ -122,22 +176,21 @@ function createConfetti() {
     const confetti = document.createElement("div");
     confetti.classList.add("confetti");
 
-    // ランダム位置
     confetti.style.left = Math.random() * 100 + "%";
 
-    // ランダム色
     const colors = ["#f44336", "#e91e63", "#9c27b0", "#2196f3", "#4CAF50", "#FFC107"];
     confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
-    // ランダム時間
     confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
 
     screen.appendChild(confetti);
 
-    // 自動削除
     setTimeout(() => confetti.remove(), 3000);
   }
 }
+
+// 初期読み込み
+loadTask();
 </script>
 
 </body>
