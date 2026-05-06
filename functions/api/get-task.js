@@ -1,7 +1,6 @@
 export async function onRequestGet(context) {
   const { request, env } = context;
 
-  // URLからuserId取得（例：?user=A123）
   const url = new URL(request.url);
   const userId = url.searchParams.get("user");
 
@@ -9,7 +8,6 @@ export async function onRequestGet(context) {
     return new Response("userIdがありません", { status: 400 });
   }
 
-  // KVから取得
   const data = await env.CHALLENGE_KV.get(`user:${userId}`);
 
   if (!data) {
