@@ -6,126 +6,99 @@
 
 <style>
 body {
+  margin: 0;
   font-family: sans-serif;
+  background: #f5f7fb;
   text-align: center;
-  background: #f0f8ff;
 }
 
 h1 {
-  margin-top: 30px;
-  font-size: 26px;
+  margin: 20px;
 }
 
-.theme-container {
+/* グリッド */
+#themes {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
-  max-width: 420px;
-  margin: 30px auto;
-}
-
-.theme-card {
-  background: white;
   padding: 20px;
+  max-width: 500px;
+  margin: auto;
+}
+
+/* カード */
+.theme-card {
   border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 20px;
   cursor: pointer;
-}
-
-.theme-card.selected {
-  border: 3px solid #4CAF50;
-}
-
-.theme-title {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.theme-desc {
-  font-size: 14px;
-  margin-top: 8px;
-  color: #555;
-}
-
-button {
-  margin-top: 20px;
-  padding: 12px 20px;
-  font-size: 18px;
-  border: none;
-  border-radius: 12px;
-  background-color: #4CAF50;
   color: white;
-  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-button:disabled {
-  background-color: gray;
+.theme-card:active {
+  transform: scale(0.95);
 }
+
+.icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.name {
+  font-size: 16px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>こんしゅうのテーマをえらぼう！</h1>
+<h1>どのテーマにする？</h1>
 
-<div id="themeList" class="theme-container"></div>
-
-<button id="selectBtn" disabled>これにする！</button>
+<div id="themes"></div>
 
 <script>
-
-let selectedTheme = null;
-
-// ✅ テーマ取得（同一ドメイン）
 async function loadThemes() {
-  try {
-    const res = await fetch("/api/themes");
-    const themes = await res.json();
+  const res = await fetch("/api/themes");
+  const themes = await res.json();
 
-    const list = document.getElementById("themeList");
+  const container = document.getElementById("themes");
 
-    themes.forEach(theme => {
-      const div = document.createElement("div");
-      div.className = "theme-card";
+  const sorted = themes
+    .filter(t => t.isActive)
+    .sort((a, b) => a.order - b.order);
 
-      div.innerHTML = `
-        <div class="theme-title">${theme.title}</div>
-        <div class="theme-desc">${theme.desc}</div>
-      `;
+  sorted.forEach(theme => {
 
-      div.onclick = () => {
-        document.querySelectorAll(".theme-card").forEach(el => {
-          el.classList.remove("selected");
-        });
+    const card = document.createElement("div");
+    card.className = "theme-card";
+    card.style.backgroundColor = theme.color;
 
-        div.classList.add("selected");
-        selectedTheme = theme.id;
+    card.innerHTML = `
+      <div class="icon">${theme.icon}</div>
+      <div class="name">${theme.name}</div>
+    `;
 
-        document.getElementById("selectBtn").disabled = false;
-      };
-
-      list.appendChild(div);
+    // ホバー
+    card.addEventListener("mouseenter", () => {
+      card.style.backgroundColor = theme.colorHover;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.backgroundColor = theme.color;
     });
 
-  } catch (e) {
-    alert("データの読み込みに失敗しました");
-    console.error(e);
-  }
+    // クリック
+    card.addEventListener("click", () => {
+      localStorage.setItem("selectedTheme", theme.id);
+      window.location.href = "task.html";
+    });
+
+    container.appendChild(card);
+  });
 }
 
-// ✅ 決定ボタン
-document.getElementById("selectBtn").onclick = () => {
-  if (!selectedTheme) return;
-
-  // 仮保存
-  localStorage.setItem("selectedTheme", selectedTheme);
-
-  // 次の画面へ
-  window.location.href = "tasks.html";
-};
-
-// ✅ 実行
 loadThemes();
-
 </script>
 
 </body>
