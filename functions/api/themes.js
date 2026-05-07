@@ -1,5 +1,5 @@
 export async function onRequestGet(context) {
-  const data = await context.env.KV.get("themes:current");
+  const data = await context.env.CHALLENGE_KV.get("themes:current");
 
   return new Response(data || "[]", {
     headers: {
