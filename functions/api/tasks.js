@@ -2,7 +2,7 @@ export async function onRequestGet(context) {
   const url = new URL(context.request.url);
   const themeId = url.searchParams.get("themeId");
 
-  const data = await context.env.KV.get(`tasks:${themeId}`);
+  const data = await context.env.CHALLENGE_KV.get(`tasks:${themeId}`);
 
   return new Response(data || "[]", {
     headers: {
