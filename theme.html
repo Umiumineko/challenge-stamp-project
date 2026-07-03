@@ -2,51 +2,86 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>テーマをえらぼう</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #f5f7fb;
-  text-align: center;
+
+body{
+    margin:0;
+    font-family:"Yu Gothic","Hiragino Sans",sans-serif;
+    background:linear-gradient(to bottom,#e8f6ff,#ffffff);
+    min-height:100vh;
 }
 
-h1 {
-  margin: 20px;
+header{
+    text-align:center;
+    padding:30px 20px;
 }
 
-/* グリッド */
-#themes {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  padding: 20px;
-  max-width: 500px;
-  margin: auto;
+h1{
+    font-size:2rem;
+    color:#333;
+    margin-bottom:10px;
 }
 
-/* カード */
-.theme-card {
-  border-radius: 16px;
-  padding: 20px;
-  cursor: pointer;
-  color: white;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.subtitle{
+    font-size:1.1rem;
+    color:#555;
 }
 
-.theme-card:active {
-  transform: scale(0.95);
+#themeContainer{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:24px;
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
 }
 
-.icon {
-  font-size: 40px;
-  margin-bottom: 10px;
+.theme-card{
+    border-radius:24px;
+    padding:24px;
+    color:#333;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,0.1);
+    transition:all 0.2s ease;
 }
 
-.name {
-  font-size: 16px;
+.theme-card:hover{
+    transform:translateY(-5px);
+}
+
+.theme-card:active{
+    transform:scale(0.98);
+}
+
+.icon{
+    font-size:64px;
+    margin-bottom:10px;
+}
+
+.theme-name{
+    font-size:1.6rem;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.task-count{
+    background:white;
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:30px;
+    font-size:1rem;
+}
+
+.loading{
+    text-align:center;
+    font-size:1.3rem;
+    color:#666;
+    margin-top:60px;
 }
 
 </style>
@@ -54,51 +89,133 @@ h1 {
 
 <body>
 
-<h1>どのテーマにする？</h1>
+<header>
+    <h1>🌟 テーマをえらぼう 🌟</h1>
+    <div class="subtitle">
+        やってみたいテーマを えらんでね！
+    </div>
+</header>
 
-<div id="themes"></div>
+<div id="themeContainer">
+    <div class="loading">
+        よみこみちゅう…
+    </div>
+</div>
 
 <script>
-async function loadThemes() {
-  const res = await fetch("/api/themes");
-  const themes = await res.json();
 
-  const container = document.getElementById("themes");
+const themeInfo = {
 
-  const sorted = themes
-    .filter(t => t.isActive)
-    .sort((a, b) => a.order - b.order);
+    nature:{
+        icon:"🦋",
+        color:"#B8F2C5"
+    },
 
-  sorted.forEach(theme => {
+    health:{
+        icon:"🍎",
+        color:"#FFE59D"
+    },
 
-    const card = document.createElement("div");
-    card.className = "theme-card";
-    card.style.backgroundColor = theme.color;
+    work:{
+        icon:"💼",
+        color:"#D2C4FF"
+    },
 
-    card.innerHTML = `
-      <div class="icon">${theme.icon}</div>
-      <div class="name">${theme.name}</div>
-    `;
+    world:{
+        icon:"🌏",
+        color:"#AEEBFF"
+    },
 
-    // ホバー
-    card.addEventListener("mouseenter", () => {
-      card.style.backgroundColor = theme.colorHover;
-    });
-    card.addEventListener("mouseleave", () => {
-      card.style.backgroundColor = theme.color;
-    });
+    clean:{
+        icon:"🧹",
+        color:"#FFD4F5"
+    },
 
-    // クリック
-    card.addEventListener("click", () => {
-      localStorage.setItem("selectedTheme", theme.id);
-      window.location.href = "task.html";
-    });
+    enjoy:{
+        icon:"🎉",
+        color:"#FFF4A8"
+    }
 
-    container.appendChild(card);
-  });
+};
+
+async function loadThemes(){
+
+    try{
+
+        const response = await fetch("./tasks.json");
+        const tasks = await response.json();
+
+        const themes = {};
+
+        tasks.forEach(task=>{
+
+            if(!themes[task.themeId]){
+                themes[task.themeId] = {
+                    name: task.theme,
+                    count: 0
+                };
+            }
+
+            themes[task.themeId].count++;
+
+        });
+
+        const container = document.getElementById("themeContainer");
+        container.innerHTML = "";
+
+        Object.entries(themes).forEach(([themeId,data])=>{
+
+            const info = themeInfo[themeId] || {
+                icon:"⭐",
+                color:"#eeeeee"
+            };
+
+            const card = document.createElement("div");
+
+            card.className = "theme-card";
+            card.style.background = info.color;
+
+            card.innerHTML = `
+                <div class="icon">${info.icon}</div>
+
+                <div class="theme-name">
+                    ${data.name}
+                </div>
+
+                <div class="task-count">
+                    このテーマには
+                    <strong>${data.count}</strong>
+                    このチャレンジがあるよ！
+                </div>
+            `;
+
+            card.addEventListener("click",()=>{
+
+                location.href =
+                    `tasks.html?theme=${themeId}`;
+
+            });
+
+            container.appendChild(card);
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById("themeContainer").innerHTML = `
+            <div class="loading">
+                よみこみに しっぱいしました
+            </div>
+        `;
+
+    }
+
 }
 
 loadThemes();
+
 </script>
 
 </body>
