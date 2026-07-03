@@ -142,7 +142,7 @@ async function loadThemes(){
 
     try{
 
-        const response = await fetch("./tasks.json");
+        const response = await fetch("tasks.json");
         const tasks = await response.json();
 
         const themes = {};
