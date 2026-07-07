@@ -2,195 +2,226 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>今日のチャレンジ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>チャレンジ</title>
 
 <style>
-body {
-  font-family: sans-serif;
-  text-align: center;
-  padding: 20px;
+
+body{
+    margin:0;
+    font-family:"Yu Gothic","Hiragino Sans",sans-serif;
+    background:linear-gradient(to bottom,#f8fbff,#ffffff);
 }
 
-/* 課題表示 */
-.task-box {
-  margin-top: 40px;
-  font-size: 20px;
+header{
+    text-align:center;
+    padding:30px 20px;
 }
 
-/* ボタン */
-.complete-btn {
-  margin-top: 30px;
-  padding: 15px 30px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
-  background-color: #4CAF50;
-  color: white;
+h1{
+    color:#333;
 }
 
-/* 完了画面 */
-.complete-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+#container{
+    max-width:800px;
+    margin:auto;
+    padding:20px;
 }
 
-.hidden {
-  display: none;
+.task-card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 5px 12px rgba(0,0,0,0.08);
 }
 
-.card {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  text-align: center;
-  width: 80%;
-  max-width: 320px;
-  z-index: 2;
+.task-title{
+    font-size:1.6rem;
+    font-weight:bold;
+    margin-bottom:30px;
+    color:#333;
 }
 
-.emoji {
-  font-size: 60px;
+.field{
+    margin-bottom:25px;
 }
 
-.stamp {
-  font-size: 60px;
-  margin: 20px 0;
-  animation: pop 0.4s ease;
+label{
+    display:block;
+    font-size:1.1rem;
+    margin-bottom:8px;
+    font-weight:bold;
 }
 
-@keyframes pop {
-  0% { transform: scale(0.5); }
-  100% { transform: scale(1); }
+input[type="text"],
+textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:12px;
+    font-size:1rem;
 }
 
-/* 紙吹雪 */
-.confetti {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  top: -10px;
-  animation: fall linear forwards;
+textarea{
+    min-height:120px;
 }
 
-@keyframes fall {
-  to {
-    transform: translateY(110vh) rotate(720deg);
-  }
+input[type="file"]{
+    margin-top:8px;
 }
+
+.complete-button{
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:15px;
+    background:#4CAF50;
+    color:white;
+    font-size:1.2rem;
+    cursor:pointer;
+}
+
+.complete-button:hover{
+    background:#43a047;
+}
+
+.back-button{
+    display:inline-block;
+    margin-bottom:20px;
+    text-decoration:none;
+    color:#333;
+}
+
+.loading{
+    text-align:center;
+    font-size:1.2rem;
+    color:#666;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>今日のチャレンジ</h1>
+<header>
+    <h1>🌟 チャレンジ 🌟</h1>
+</header>
 
-<div class="task-box">
-  <strong id="task">読み込み中...</strong>
-</div>
+<div id="container">
 
-<button class="complete-btn" onclick="completeTask()">
-  できた！
-</button>
+    <div class="loading">
+        よみこみちゅう...
+    </div>
 
-<!-- 🎉 完了画面 -->
-<div id="completeScreen" class="complete-screen hidden">
-  <div class="card">
-    <div class="emoji">🎉</div>
-    <h2>やったね！</h2>
-    <div class="stamp">⭐</div>
-    <p>チャレンジクリア！</p>
-    <button onclick="closeComplete()">OK</button>
-  </div>
 </div>
 
 <script>
-// ユーザーID取得
-function getUserId() {
-  const userId = localStorage.getItem("userId");
 
-  if (!userId) {
-    alert("ログインしてください");
-    location.href = "/login.html";
-  }
+async function loadChallenge(){
 
-  return userId;
-}
+    const params = new URLSearchParams(location.search);
 
-// タスク読み込み
-async function loadTask() {
-  const userId = getUserId();
+    const id = Number(params.get("id"));
 
-  try {
-    const res = await fetch(`/api/get-task?user=${userId}`);
-    const data = await res.json();
+    try{
 
-    if (!data.task) {
-      // 未設定なら選択画面へ
-      location.href = "/tasks.html";
-      return;
+        const response = await fetch("/tasks.json");
+        const tasks = await response.json();
+
+        const task =
+            tasks.find(t => t.id === id);
+
+        if(!task){
+
+            document.getElementById("container").innerHTML =
+                "チャレンジが見つかりません";
+            return;
+        }
+
+        const container =
+            document.getElementById("container");
+
+        let fieldsHtml = "";
+
+        task.fields.forEach((field,index)=>{
+
+            if(field.type === "text"){
+
+                fieldsHtml += `
+                    <div class="field">
+                        <label>${field.label}</label>
+
+                        <textarea
+                            id="field${index}"
+                            placeholder="ここに入力しよう"
+                        ></textarea>
+                    </div>
+                `;
+            }
+
+            if(field.type === "photo"){
+
+                fieldsHtml += `
+                    <div class="field">
+                        <label>${field.label}</label>
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            id="field${index}"
+                        >
+                    </div>
+                `;
+            }
+
+        });
+
+        container.innerHTML = `
+
+            javascript:history.back()
+               ← もどる
+            </a>
+
+            <div class="task-card">
+
+                <div class="task-title">
+                    ${task.task}
+                </div>
+
+                ${fieldsHtml}
+
+                <button
+                  class="complete-button"
+                  onclick="completeChallenge()">
+                  ✅ チャレンジできた！
+                </button>
+
+            </div>
+
+        `;
+
+    }
+    catch(error){
+
+        document.getElementById("container").innerHTML =
+            `<div class="loading">${error}</div>`;
+
     }
 
-    document.getElementById("task").textContent = data.task;
-
-  } catch (e) {
-    console.error(e);
-    alert("読み込みエラー");
-  }
 }
 
-// 完了ボタン
-function completeTask() {
-  showComplete();
+function completeChallenge(){
 
-  // 👉 将来ここで「完了記録API」も呼べる
-  // fetch("/api/complete-task", ...)
+    alert(
+      "すごい！チャレンジをがんばったね！🌟"
+    );
+
 }
 
-// 完了画面表示
-function showComplete() {
-  const screen = document.getElementById("completeScreen");
-  screen.classList.remove("hidden");
+loadChallenge();
 
-  createConfetti();
-}
-
-// 閉じる
-function closeComplete() {
-  document.getElementById("completeScreen").classList.add("hidden");
-}
-
-// 紙吹雪
-function createConfetti() {
-  const screen = document.getElementById("completeScreen");
-
-  for (let i = 0; i < 50; i++) {
-    const confetti = document.createElement("div");
-    confetti.classList.add("confetti");
-
-    confetti.style.left = Math.random() * 100 + "%";
-
-    const colors = ["#f44336", "#e91e63", "#9c27b0", "#2196f3", "#4CAF50", "#FFC107"];
-    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-    confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
-
-    screen.appendChild(confetti);
-
-    setTimeout(() => confetti.remove(), 3000);
-  }
-}
-
-// 初期読み込み
-loadTask();
 </script>
 
 </body>
