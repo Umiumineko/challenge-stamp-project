@@ -2,91 +2,234 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>タスク選択</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>チャレンジをえらぼう</title>
 
 <style>
-body {
-  font-family: sans-serif;
-  text-align: center;
-  padding: 20px;
+
+body{
+    margin:0;
+    font-family:"Yu Gothic","Hiragino Sans",sans-serif;
+    background:linear-gradient(to bottom,#f0f9ff,#ffffff);
+    min-height:100vh;
 }
 
-h1 {
-  margin-bottom: 20px;
+header{
+    text-align:center;
+    padding:30px 20px;
 }
 
-.task-btn {
-  display: block;
-  width: 80%;
-  max-width: 300px;
-  margin: 10px auto;
-  padding: 15px;
-  font-size: 16px;
-  border-radius: 10px;
-  border: none;
-  background-color: #4CAF50;
-  color: white;
+h1{
+    color:#333;
+    margin-bottom:10px;
 }
+
+.subtitle{
+    color:#666;
+    font-size:1.1rem;
+}
+
+.back-button{
+    display:inline-block;
+    margin-top:15px;
+    padding:10px 18px;
+    background:white;
+    border-radius:30px;
+    text-decoration:none;
+    color:#333;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+#taskContainer{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.task-card{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:20px;
+    cursor:pointer;
+    box-shadow:0 5px 12px rgba(0,0,0,0.08);
+    transition:all 0.2s;
+}
+
+.task-card:hover{
+    transform:translateY(-3px);
+}
+
+.task-number{
+    font-size:1.1rem;
+    color:#666;
+}
+
+.task-title{
+    font-size:1.4rem;
+    font-weight:bold;
+    margin-top:8px;
+    color:#333;
+}
+
+.loading{
+    text-align:center;
+    font-size:1.3rem;
+    color:#666;
+    margin-top:50px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>やりたいチャレンジをえらぼう！</h1>
+<header>
 
-<button class="task-btn" onclick="selectTask('あさじゅんびをする')">
-  あさじゅんびをする
-</button>
+    <h1 id="themeTitle">チャレンジをえらぼう</h1>
 
-<button class="task-btn" onclick="selectTask('10ぷんべんきょうする')">
-  10ぷんべんきょうする
-</button>
+    <div class="subtitle">
+        やってみたいチャレンジを えらんでね！
+    </div>
 
-<button class="task-btn" onclick="selectTask('うんどうをする')">
-  うんどうをする
-</button>
+    themes.html="back-button">
+        ← テーマにもどる
+    </a>
+
+</header>
+
+<div id="taskContainer">
+
+    <div class="loading">
+        よみこみちゅう…
+    </div>
+
+</div>
 
 <script>
-// ユーザーID取得（ログイン時に保存されている想定）
-function getUserId() {
-  const userId = localStorage.getItem("userId");
 
-  if (!userId) {
-    alert("ログインしてください");
-    location.href = "/login.html";
-  }
+const themeInfo = {
 
-  return userId;
-}
+    nature:{
+        icon:"🦋"
+    },
 
-// タスク選択 → API保存
-async function selectTask(taskName) {
-  const userId = getUserId();
+    health:{
+        icon:"🍎"
+    },
 
-  try {
-    const res = await fetch("/api/set-task", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        user: userId,
-        task: taskName
-      })
-    });
+    work:{
+        icon:"💼"
+    },
 
-    if (!res.ok) {
-      throw new Error("保存に失敗");
+    world:{
+        icon:"🌏"
+    },
+
+    clean:{
+        icon:"🧹"
+    },
+
+    enjoy:{
+        icon:"🎉"
     }
 
-    // 保存成功 → challenge画面へ
-    location.href = "/challenge.html";
+};
 
-  } catch (error) {
-    alert("エラーが発生しました");
-    console.error(error);
-  }
+async function loadTasks(){
+
+    const params = new URLSearchParams(location.search);
+
+    const themeId = params.get("theme");
+
+    if(!themeId){
+
+        document.getElementById("taskContainer").innerHTML = `
+            <div class="loading">
+                テーマが見つかりません
+            </div>
+        `;
+
+        return;
+    }
+
+    try{
+
+        const response = await fetch("/tasks.json");
+
+        const tasks = await response.json();
+
+        const filteredTasks =
+            tasks.filter(task => task.themeId === themeId);
+
+        if(filteredTasks.length === 0){
+
+            document.getElementById("taskContainer").innerHTML = `
+                <div class="loading">
+                    チャレンジがありません
+                </div>
+            `;
+
+            return;
+        }
+
+        const themeName = filteredTasks[0].theme;
+
+        const icon =
+            themeInfo[themeId]?.icon || "⭐";
+
+        document.getElementById("themeTitle").textContent =
+            `${icon} ${themeName}`;
+
+        const container =
+            document.getElementById("taskContainer");
+
+        container.innerHTML = "";
+
+        filteredTasks.forEach((task,index)=>{
+
+            const card =
+                document.createElement("div");
+
+            card.className = "task-card";
+
+            card.innerHTML = `
+                <div class="task-number">
+                    チャレンジ ${index+1}
+                </div>
+
+                <div class="task-title">
+                    ${task.task}
+                </div>
+            `;
+
+            card.addEventListener("click",()=>{
+
+                location.href =
+                    `challenge.html?id=${task.id}`;
+
+            });
+
+            container.appendChild(card);
+
+        });
+
+    }catch(error){
+
+        document.getElementById("taskContainer").innerHTML = `
+            <div class="loading">
+                よみこみにしっぱいしました<br>
+                ${error}
+            </div>
+        `;
+
+    }
+
 }
+
+loadTasks();
+
 </script>
 
 </body>
