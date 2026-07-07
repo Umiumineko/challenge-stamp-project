@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>テーマをえらぼう</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:"Yu Gothic","Hiragino Sans",sans-serif;
+    background:linear-gradient(to bottom,#e8f6ff,#ffffff);
+    min-height:100vh;
+}
+
+header{
+    text-align:center;
+    padding:30px 20px;
+}
+
+h1{
+    font-size:2rem;
+    color:#333;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    font-size:1.1rem;
+    color:#555;
+}
+
+#themeContainer{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:24px;
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.theme-card{
+    border-radius:24px;
+    padding:24px;
+    color:#333;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,0.1);
+    transition:all 0.2s ease;
+}
+
+.theme-card:hover{
+    transform:translateY(-5px);
+}
+
+.theme-card:active{
+    transform:scale(0.98);
+}
+
+.icon{
+    font-size:64px;
+    margin-bottom:10px;
+}
+
+.theme-name{
+    font-size:1.6rem;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.task-count{
+    background:white;
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:30px;
+    font-size:1rem;
+}
+
+.loading{
+    text-align:center;
+    font-size:1.3rem;
+    color:#666;
+    margin-top:60px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌟 テーマをえらぼう 🌟</h1>
+    <div class="subtitle">
+        やってみたいテーマを えらんでね！
+    </div>
+</header>
+
+<div id="themeContainer">
+    <div class="loading">
+        よみこみちゅう…
+    </div>
+</div>
+
+<script>
+
+const themeInfo = {
+
+    nature:{
+        icon:"🦋",
+        color:"#B8F2C5"
+    },
+
+    health:{
+        icon:"🍎",
+        color:"#FFE59D"
+    },
+
+    work:{
+        icon:"💼",
+        color:"#D2C4FF"
+    },
+
+    world:{
+        icon:"🌏",
+        color:"#AEEBFF"
+    },
+
+    clean:{
+        icon:"🧹",
+        color:"#FFD4F5"
+    },
+
+    enjoy:{
+        icon:"🎉",
+        color:"#FFF4A8"
+    }
+
+};
+
+async function loadThemes(){
+
+    try{
+
+        const response = await fetch("tasks.json");
+        const tasks = await response.json();
+
+        const themes = {};
+
+        tasks.forEach(task=>{
+
+            if(!themes[task.themeId]){
+                themes[task.themeId] = {
+                    name: task.theme,
+                    count: 0
+                };
+            }
+
+            themes[task.themeId].count++;
+
+        });
+
+        const container = document.getElementById("themeContainer");
+        container.innerHTML = "";
+
+        Object.entries(themes).forEach(([themeId,data])=>{
+
+            const info = themeInfo[themeId] || {
+                icon:"⭐",
+                color:"#eeeeee"
+            };
+
+            const card = document.createElement("div");
+
+            card.className = "theme-card";
+            card.style.background = info.color;
+
+            card.innerHTML = `
+                <div class="icon">${info.icon}</div>
+
+                <div class="theme-name">
+                    ${data.name}
+                </div>
+
+                <div class="task-count">
+                    このテーマには
+                    <strong>${data.count}</strong>
+                    このチャレンジがあるよ！
+                </div>
+            `;
+
+            card.addEventListener("click",()=>{
+
+                location.href =
+                    `tasks.html?theme=${themeId}`;
+
+            });
+
+            container.appendChild(card);
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById("themeContainer").innerHTML = `
+            <div class="loading">
+                よみこみに しっぱいしました<br>
+                ${error}
+            </div>
+        `;
+
+    }
+
+}
+
+loadThemes();
+
+</script>
+
+</body>
+</html>
