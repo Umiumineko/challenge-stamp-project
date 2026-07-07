@@ -86,14 +86,14 @@ input[type="file"]{
     background:#43a047;
 }
 
+
 .back-button{
-    display:inline-block;
     margin-bottom:20px;
     padding:10px 16px;
     background:white;
+    border:none;
     border-radius:30px;
-    text-decoration:none;
-    color:#333;
+    cursor:pointer;
     box-shadow:0 3px 8px rgba(0,0,0,.1);
 }
 
@@ -181,7 +181,11 @@ async function loadChallenge(){
 
         document.getElementById("container").innerHTML = `
 
-            javascript:history.back()
+            <button
+                class="back-button"
+                onclick="history.back()">
+                ←もどる
+            </button>
 
             <div class="task-card">
 
