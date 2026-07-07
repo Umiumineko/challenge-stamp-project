@@ -182,26 +182,24 @@ async function loadChallenge(){
         document.getElementById("container").innerHTML = `
 
             javascript:history.back()
-                ← もどる
-            </a>
 
             <div class="task-card">
 
-                <div class="task-title">
-                    ${task.task}
-                </div>
-
-                ${fieldsHtml}
-
-                <button
-                    class="complete-button"
-                    onclick="completeChallenge()">
-                    ✅ チャレンジできた！
-                </button>
-
+            <div class="task-title">
+                ${task.task}
             </div>
 
-        `;
+            ${fieldsHtml}
+
+            <button
+                class="complete-button"
+                onclick="completeChallenge()">
+                ✅ チャレンジできた！
+            </button>
+
+        </div>
+
+    `;
 
     }
     catch(error){
