@@ -157,6 +157,7 @@ async function loadChallenge(){
                             id="field${index}"
                             placeholder="ここに入力しよう"
                         ></textarea>
+
                     </div>
                 `;
             }
@@ -172,6 +173,7 @@ async function loadChallenge(){
                             accept="image/*"
                             id="field${index}"
                         >
+
                     </div>
                 `;
             }
@@ -201,34 +203,12 @@ async function loadChallenge(){
                 </button>
 
             </div>
-            document.getElementById("container").innerHTML = `
 
-    <button
-        class="back-button"
-        onclick="history.back()">
-        ←もどる
-    </button>
-
-    <div class="task-card">
-
-        <div class="task-title">
-            ${task.task}
-        </div>
-
-        ${fieldsHtml}
-
-        <button
-            class="complete-button"
-            onclick="completeChallenge()">
-            ✅ チャレンジできた！
-        </button>
-
-    </div>
-    <div id="history"></div>
-
-`;
+            <div id="history"></div>
 
         `;
+
+        await loadHistory();
 
     }
     catch(error){
@@ -266,11 +246,11 @@ async function loadHistory(){
         }
 
         const records =
-            data.records.reverse();
+            [...data.records].reverse();
 
         let html =
             `<div class="task-card" style="margin-top:20px;">
-            <h2>✨ 前にやったチャレンジ ✨</h2>`;
+                <h2>✨ 前にやったチャレンジ ✨</h2>`;
 
         if(records.length === 0){
 
@@ -287,6 +267,22 @@ async function loadHistory(){
                 const dateText =
                     `${date.getMonth()+1}/${date.getDate()}`;
 
+                let answerHtml = "";
+
+                if(record.answers){
+
+                    record.answers.forEach(answer => {
+
+                        answerHtml += `
+                            <div style="margin-top:4px;">
+                                「${answer.value}」
+                            </div>
+                        `;
+
+                    });
+
+                }
+
                 html += `
                     <div style="
                         margin:12px 0;
@@ -294,11 +290,19 @@ async function loadHistory(){
                         border-bottom:1px solid #eee;
                     ">
 
-                        <strong>
-                            ${dateText}
-                        </strong>
+                        <div>
+                            <strong>${dateText}</strong>
+                            ${record.taskName}
+                        </div>
 
-                        ${record.taskName}
+                        <div style="
+                            margin-top:6px;
+                            color:#666;
+                            padding-left:10px;
+                        ">
+                            ${answerHtml}
+                        </div>
+
                     </div>
                 `;
 
@@ -311,14 +315,15 @@ async function loadHistory(){
         document.getElementById("history")
             .innerHTML = html;
 
-    }catch(error){
+    }
+    catch(error){
 
         console.error(error);
 
     }
 
 }
-    
+
 async function completeChallenge(){
 
     const userId = localStorage.getItem("userId");
@@ -328,6 +333,7 @@ async function completeChallenge(){
         alert("ログイン情報がありません");
 
         return;
+
     }
 
     if(!currentTask){
@@ -335,6 +341,7 @@ async function completeChallenge(){
         alert("チャレンジ情報がありません");
 
         return;
+
     }
 
     const answers = [];
@@ -373,11 +380,14 @@ async function completeChallenge(){
             }
         );
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         if(result.ok){
 
             alert("すごい！チャレンジをがんばったね！🌈");
+
+            await loadHistory();
 
         }else{
 
@@ -397,7 +407,7 @@ async function completeChallenge(){
 }
 
 loadChallenge();
-loadHistory();
+
 </script>
 </body>
 </html>
