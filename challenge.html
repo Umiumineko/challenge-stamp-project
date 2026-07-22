@@ -116,7 +116,6 @@ input[type="file"]{
     <div class="loading">
         よみこみちゅう...
     </div>
-
 </div>
 <script>
 
@@ -202,6 +201,32 @@ async function loadChallenge(){
                 </button>
 
             </div>
+            document.getElementById("container").innerHTML = `
+
+    <button
+        class="back-button"
+        onclick="history.back()">
+        ←もどる
+    </button>
+
+    <div class="task-card">
+
+        <div class="task-title">
+            ${task.task}
+        </div>
+
+        ${fieldsHtml}
+
+        <button
+            class="complete-button"
+            onclick="completeChallenge()">
+            ✅ チャレンジできた！
+        </button>
+
+    </div>
+    <div id="history"></div>
+
+`;
 
         `;
 
@@ -217,6 +242,83 @@ async function loadChallenge(){
 
 }
 
+async function loadHistory(){
+
+    const userId =
+        localStorage.getItem("userId");
+
+    if(!userId){
+        return;
+    }
+
+    try{
+
+        const response =
+            await fetch(
+                `/api/getChallenges?userId=${encodeURIComponent(userId)}`
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.ok){
+            return;
+        }
+
+        const records =
+            data.records.reverse();
+
+        let html =
+            `<div class="task-card" style="margin-top:20px;">
+            <h2>✨ 前にやったチャレンジ ✨</h2>`;
+
+        if(records.length === 0){
+
+            html +=
+                "<p>まだチャレンジの記録がありません。</p>";
+
+        }else{
+
+            records.forEach(record => {
+
+                const date =
+                    new Date(record.completedAt);
+
+                const dateText =
+                    `${date.getMonth()+1}/${date.getDate()}`;
+
+                html += `
+                    <div style="
+                        margin:12px 0;
+                        padding:12px;
+                        border-bottom:1px solid #eee;
+                    ">
+
+                        <strong>
+                            ${dateText}
+                        </strong>
+
+                        ${record.taskName}
+                    </div>
+                `;
+
+            });
+
+        }
+
+        html += "</div>";
+
+        document.getElementById("history")
+            .innerHTML = html;
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+    
 async function completeChallenge(){
 
     const userId = localStorage.getItem("userId");
