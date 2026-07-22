@@ -118,8 +118,9 @@ input[type="file"]{
     </div>
 
 </div>
-
 <script>
+
+let currentTask = null;
 
 async function loadChallenge(){
 
@@ -137,8 +138,11 @@ async function loadChallenge(){
 
             document.getElementById("container").innerHTML =
                 "<p>チャレンジが見つかりません。</p>";
+
             return;
         }
+
+        currentTask = task;
 
         let fieldsHtml = "";
 
@@ -148,14 +152,12 @@ async function loadChallenge(){
 
                 fieldsHtml += `
                     <div class="field">
-
                         <label>${field.label}</label>
 
                         <textarea
                             id="field${index}"
                             placeholder="ここに入力しよう"
                         ></textarea>
-
                     </div>
                 `;
             }
@@ -164,7 +166,6 @@ async function loadChallenge(){
 
                 fieldsHtml += `
                     <div class="field">
-
                         <label>${field.label}</label>
 
                         <input
@@ -172,7 +173,6 @@ async function loadChallenge(){
                             accept="image/*"
                             id="field${index}"
                         >
-
                     </div>
                 `;
             }
@@ -189,21 +189,21 @@ async function loadChallenge(){
 
             <div class="task-card">
 
-            <div class="task-title">
-                ${task.task}
+                <div class="task-title">
+                    ${task.task}
+                </div>
+
+                ${fieldsHtml}
+
+                <button
+                    class="complete-button"
+                    onclick="completeChallenge()">
+                    ✅ チャレンジできた！
+                </button>
+
             </div>
 
-            ${fieldsHtml}
-
-            <button
-                class="complete-button"
-                onclick="completeChallenge()">
-                ✅ チャレンジできた！
-            </button>
-
-        </div>
-
-    `;
+        `;
 
     }
     catch(error){
@@ -217,15 +217,85 @@ async function loadChallenge(){
 
 }
 
-function completeChallenge(){
+async function completeChallenge(){
 
-    alert("すごい！チャレンジをがんばったね！🌈");
+    const userId = localStorage.getItem("userId");
+
+    if(!userId){
+
+        alert("ログイン情報がありません");
+
+        return;
+    }
+
+    if(!currentTask){
+
+        alert("チャレンジ情報がありません");
+
+        return;
+    }
+
+    const answers = [];
+
+    currentTask.fields.forEach((field,index)=>{
+
+        const element =
+            document.getElementById(`field${index}`);
+
+        if(field.type === "text"){
+
+            answers.push({
+                label: field.label,
+                value: element.value
+            });
+
+        }
+
+    });
+
+    try{
+
+        const response = await fetch(
+            "/api/saveChallenge",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId,
+                    taskId: currentTask.id,
+                    taskName: currentTask.task,
+                    answers
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if(result.ok){
+
+            alert("すごい！チャレンジをがんばったね！🌈");
+
+        }else{
+
+            alert("保存に失敗しました");
+
+        }
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert("通信エラーがおきました");
+
+    }
 
 }
 
 loadChallenge();
 
 </script>
-
 </body>
 </html>
