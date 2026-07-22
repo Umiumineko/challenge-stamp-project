@@ -246,8 +246,7 @@ async function loadHistory(){
         }
 
         const records =
-            [...data.records].reverse();
-
+            [...(data.records || [])].reverse();
         let html =
             `<div class="task-card" style="margin-top:20px;">
                 <h2>✨ 前にやったチャレンジ ✨</h2>`;
@@ -312,9 +311,11 @@ async function loadHistory(){
 
         html += "</div>";
 
-        document.getElementById("history")
-            .innerHTML = html;
-
+        const historyDiv =
+            document.getElementById("history");
+        if(historyDiv){
+            historyDiv.innerHTML = html;
+        }
     }
     catch(error){
 
