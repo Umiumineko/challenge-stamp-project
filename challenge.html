@@ -383,18 +383,23 @@ async function completeChallenge(){
 
         const result =
             await response.json();
-
+        
+        console.log(result);
+        
         if(result.ok){
-
+        
             alert("すごい！チャレンジをがんばったね！🌈");
-
+        
             await loadHistory();
-
+        
         }else{
+        
+            alert(
+                "保存に失敗しました\n" +
+                JSON.stringify(result)
+        );
 
-            alert("保存に失敗しました");
-
-        }
+}
 
     }
     catch(error){
